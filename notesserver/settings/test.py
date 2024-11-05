@@ -1,34 +1,37 @@
+import os
+import sys
+
 from .common import *
 
 DATABASES = {
-    'default': {
-        'ENGINE': os.environ.get('DB_ENGINE', 'django.db.backends.sqlite3'),
-        'NAME': os.environ.get('DB_NAME', 'default.db'),
-        'USER': os.environ.get('DB_USER', ''),
-        'PASSWORD': os.environ.get('DB_PASSWORD', ''),
-        'HOST': os.environ.get('DB_HOST', ''),
-        'PORT': os.environ.get('DB_PORT', ''),
-        'CONN_MAX_AGE': int(os.environ.get('CONN_MAX_AGE', 0)),
+    "default": {
+        "ENGINE": os.environ.get("DB_ENGINE", "django.db.backends.mysql"),
+        "NAME": os.environ.get("DB_NAME", "edx_notes_api"),
+        "USER": os.environ.get("DB_USER", "notes001"),
+        "PASSWORD": os.environ.get("DB_PASSWORD", "secret"),
+        "HOST": os.environ.get("DB_HOST", "localhost"),
+        "PORT": os.environ.get("DB_PORT", "3306"),
+        "OPTIONS": {
+            "connect_timeout": int(os.environ.get("CONN_MAX_AGE", 0)),
+        },
     }
 }
 
-DISABLE_TOKEN_CHECK = False
-
-JWT_AUTH = {}
-
-ELASTICSEARCH_DSL = {'default': {'hosts': os.environ.get('ELASTICSEARCH_URL', 'localhost:9200')}}
-
-# Name of the Elasticsearch index
-ELASTICSEARCH_INDEX_NAMES = {'notesapi.v1.search_indexes.documents.note': 'notes_index_test'}
+DEFAULT_NOTES_PAGE_SIZE = 10
 
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {'console': {'level': 'DEBUG', 'class': 'logging.StreamHandler', 'stream': sys.stderr}},
-    'loggers': {
-        'django': {'handlers': ['console'], 'level': 'ERROR', 'propagate': False},
-        'elasticsearch.trace': {'handlers': ['console'], 'level': 'ERROR', 'propagate': False},
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {"level": "DEBUG", "class": "logging.StreamHandler", "stream": sys.stderr}
+    },
+    "loggers": {
+        "django": {"handlers": ["console"], "level": "ERROR", "propagate": False},
+        "elasticsearch.trace": {"handlers": ["console"], "level": "ERROR", "propagate": False},
     },
 }
 
-DEFAULT_NOTES_PAGE_SIZE = 10
+ELASTICSEARCH_DSL = {"default": {"hosts": os.environ.get("ELASTICSEARCH_URL", "localhost:9200")}}
+ELASTICSEARCH_INDEX_NAMES = {"notesapi.v1.search_indexes.documents.note": "notes_index_test"}
+
+JWT_AUTH = {}
