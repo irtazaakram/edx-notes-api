@@ -1,24 +1,22 @@
 import logging
 
 from django.conf import settings
-from jwt import DecodeError, ExpiredSignatureError, InvalidAudienceError
 from rest_framework.permissions import BasePermission
-from rest_framework_jwt.utils import jwt_decode_handler
+from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework.exceptions import AuthenticationFailed
 
 logger = logging.getLogger(__name__)
 
 
-class TokenWrongIssuer(Exception):
-    """Raised when the token has an incorrect issuer."""
-
+class TokenWrongIssuer(AuthenticationFailed):
     pass
 
 
 class HasAccessToken(BasePermission):
     """
-    Permission check for requests with a valid ID Token.
+    Allows access to requests with a valid JWT access token.
 
-    Expected Token:
+    The token should be structured as:
     Header {
         "alg": "HS256",
         "typ": "JWT"
@@ -29,7 +27,7 @@ class HasAccessToken(BasePermission):
         "iat": <ISSUED TIMESTAMP>,
         "aud": "<CLIENT ID>"
     }
-    Should be signed with CLIENT_SECRET.
+    It should be signed with CLIENT_SECRET.
     """
 
     def has_permission(self, request, view):
@@ -38,50 +36,51 @@ class HasAccessToken(BasePermission):
 
         token = request.headers.get("x-annotator-auth-token")
         if not token:
-            logger.debug("No token found in headers")
+            logger.warning("Access token is missing in headers.")
             return False
 
         try:
-            # Use centralized decode handler for JWT
-            data = jwt_decode_handler(token)
-            self._validate_token_issuer_and_audience(data)
+            access_token = AccessToken(token)
+            self._validate_token_payload(access_token, request)
 
-            auth_user = data.get("sub")
-            if self._user_in_request_matches(auth_user, request):
-                return True
+            return True
+        except (AuthenticationFailed, jwt.ExpiredSignatureError) as e:
+            logger.warning("Access token validation failed: %s", str(e))
+        except Exception as e:
+            logger.error("Unexpected error during token validation: %s", str(e))
 
-            logger.info("No matching user found in request fields")
-        except ExpiredSignatureError:
-            logger.debug("Token has expired: %s", token)
-        except DecodeError:
-            logger.debug("Token decoding failed: %s", token)
-        except InvalidAudienceError:
-            logger.debug("Token has an invalid audience: %s", token)
-        except TokenWrongIssuer as e:
-            logger.debug(str(e))
         return False
 
-    def _validate_token_issuer_and_audience(self, data):
-        """Validate the issuer and audience in the token."""
-        if data.get("aud") != settings.CLIENT_ID:
-            raise TokenWrongIssuer("Token has an invalid issuer or audience")
-
-    def _user_in_request_matches(self, auth_user, request):
+    def _validate_token_payload(self, token, request):
         """
-        Check if the authenticated user from the token matches the user in request fields.
+        Validates token claims and ensures the token's subject matches the user.
+        """
+        # Validate the audience
+        if token["aud"] != settings.CLIENT_ID:
+            logger.error("Token has incorrect audience: %s", token["aud"])
+            raise TokenWrongIssuer("Token audience does not match expected client ID")
+
+        # Match token subject with request user
+        auth_user = token["sub"]
+        if not self._is_request_user_matched(auth_user, request):
+            logger.warning("Token user %s did not match any request user", auth_user)
+            raise AuthenticationFailed("User in token does not match request user")
+
+    def _is_request_user_matched(self, auth_user, request):
+        """
+        Check if token subject matches 'user' in GET, POST, or data attributes of the request.
         """
         user_found = False
-        for field in ("GET", "POST", "data"):
-            if "user" in getattr(request, field, {}):
-                req_user = getattr(request, field)["user"]
+        for request_field in ("GET", "POST", "data"):
+            if "user" in getattr(request, request_field, {}):
+                req_user = getattr(request, request_field)["user"]
                 if req_user == auth_user:
                     user_found = True
                 else:
                     logger.debug(
-                        "Authenticated token user %s did not match request %s user %s",
-                        auth_user,
-                        field,
-                        req_user,
+                        "Token user %s did not match %s user %s", auth_user, request_field, req_user
                     )
                     return False
+        if not user_found:
+            logger.info("No matching user found in GET, POST, or DATA request fields")
         return user_found

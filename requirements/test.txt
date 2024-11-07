@@ -76,7 +76,6 @@ distlib==0.3.9
     #   edx-django-release-util
     #   edx-django-utils
     #   edx-drf-extensions
-    #   rest-condition
 django-cors-headers==4.6.0
     # via -r requirements/base.txt
 django-crum==0.7.9
@@ -105,9 +104,6 @@ djangorestframework==3.15.2
     #   drf-jwt
     #   drf-spectacular
     #   edx-drf-extensions
-    #   rest-condition
-djangorestframework-jwt==1.11.0
-    # via -r requirements/base.txt
 dnspython==2.7.0
     # via
     #   -r requirements/base.txt
@@ -124,7 +120,7 @@ edx-django-utils==7.0.0
     # via
     #   -r requirements/base.txt
     #   edx-drf-extensions
-edx-drf-extensions==6.6.0
+edx-drf-extensions==10.5.0
     # via -r requirements/base.txt
 edx-opaque-keys==2.11.0
     # via
@@ -149,10 +145,6 @@ filelock==3.16.1
     # via
     #   tox
     #   virtualenv
-future==1.0.0
-    # via
-    #   -r requirements/base.txt
-    #   pyjwkest
 gunicorn==23.0.0
     # via -r requirements/base.txt
 idna==3.10
@@ -229,21 +221,13 @@ pycparser==2.22
     # via
     #   -r requirements/base.txt
     #   cffi
-pycryptodomex==3.21.0
-    # via
-    #   -r requirements/base.txt
-    #   pyjwkest
 pygments==2.18.0
     # via diff-cover
-pyjwkest==1.4.2
+pyjwt[crypto]==2.9.0
     # via
     #   -r requirements/base.txt
-    #   edx-drf-extensions
-pyjwt[crypto]==1.7.1
-    # via
-    #   -r requirements/base.txt
-    #   djangorestframework-jwt
     #   drf-jwt
+    #   edx-drf-extensions
 pylint==3.3.1
     # via -r requirements/test.in
 pymongo==4.10.1
@@ -268,7 +252,6 @@ pytest-django==4.9.0
 python-dateutil==2.9.0.post0
     # via
     #   -r requirements/base.txt
-    #   edx-drf-extensions
     #   elasticsearch-dsl
     #   faker
 python-slugify==8.0.4
@@ -290,11 +273,6 @@ requests==2.32.3
     # via
     #   -r requirements/base.txt
     #   edx-drf-extensions
-    #   pyjwkest
-rest-condition==1.0.3
-    # via
-    #   -r requirements/base.txt
-    #   edx-drf-extensions
 rpds-py==0.21.0
     # via
     #   -r requirements/base.txt
@@ -310,9 +288,7 @@ six==1.16.0
     #   django-elasticsearch-dsl
     #   django-elasticsearch-dsl-drf
     #   edx-django-release-util
-    #   edx-drf-extensions
     #   elasticsearch-dsl
-    #   pyjwkest
     #   python-dateutil
 sqlparse==0.5.1
     # via
