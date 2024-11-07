@@ -13,17 +13,19 @@ class NoteSerializer(serializers.ModelSerializer):
     """
     Student Notes Model Serializer.
     """
+
+    id = serializers.CharField(source="pk")
+    user = serializers.CharField(source="user_id")
+    ranges = serializers.JSONField()
+    tags = serializers.JSONField()
+
     class Meta:
         """
         Model Serializer Meta Class.
         """
-        model = Note
-        exclude = ('user_id',)
 
-    id = serializers.CharField(source='pk')
-    user = serializers.CharField(source='user_id')
-    ranges = serializers.SerializerMethodField()
-    tags = serializers.SerializerMethodField()
+        model = Note
+        exclude = ("user_id",)
 
     def get_ranges(self, note):
         """

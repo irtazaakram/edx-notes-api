@@ -1,12 +1,13 @@
 from itertools import chain
 
-from django_elasticsearch_dsl_drf.filter_backends import (
-    CompoundSearchFilterBackend as CompoundSearchFilterBackendOrigin,
-    FilteringFilterBackend as FilteringFilterBackendOrigin,
-)
+from django_elasticsearch_dsl_drf.filter_backends import \
+    CompoundSearchFilterBackend as CompoundSearchFilterBackendOrigin
+from django_elasticsearch_dsl_drf.filter_backends import \
+    FilteringFilterBackend as FilteringFilterBackendOrigin
+
 from notesapi.v1.utils import Request
 
-__all__ = ('CompoundSearchFilterBackend', 'FilteringFilterBackend')
+__all__ = ("CompoundSearchFilterBackend", "FilteringFilterBackend")
 
 
 class CompoundSearchFilterBackend(CompoundSearchFilterBackendOrigin):
@@ -15,8 +16,8 @@ class CompoundSearchFilterBackend(CompoundSearchFilterBackendOrigin):
     """
 
     search_fields = (
-        'text',
-        'tags',
+        "text",
+        "tags",
     )
 
     def get_search_query_params(self, request):
@@ -31,8 +32,7 @@ class CompoundSearchFilterBackend(CompoundSearchFilterBackendOrigin):
         query_params = request.query_params.copy()
         return list(
             chain.from_iterable(
-                query_params.getlist(search_param, [])
-                for search_param in self.search_fields
+                query_params.getlist(search_param, []) for search_param in self.search_fields
             )
         )
 

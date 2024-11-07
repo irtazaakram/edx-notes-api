@@ -8,8 +8,8 @@ __all__ = ("html_strip", "case_insensitive_keyword")
 html_strip = analyzer(
     "html_strip",
     tokenizer="standard",
-    filter=["lowercase", "stop", "snowball"],
-    char_filter=["html_strip"]
+    char_filter=["html_strip"],
+    filter=["lowercase", "stop", "snowball"]
 )
 
 case_insensitive_keyword = analyzer(

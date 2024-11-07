@@ -21,27 +21,27 @@ class NotesPaginatorMixin:
         """
         return Response(
             {
-                'start': (self.page.number - 1) * self.get_page_size(self.request),
-                'current_page': self.page.number,
-                'next': self.get_next_link(),
-                'previous': self.get_previous_link(),
-                'total': self.page.paginator.count,
-                'num_pages': self.page.paginator.num_pages,
-                'rows': data,
+                "start": (self.page.number - 1) * self.get_page_size(self.request),
+                "current_page": self.page.number,
+                "next": self.get_next_link(),
+                "previous": self.get_previous_link(),
+                "total": self.page.paginator.count,
+                "num_pages": self.page.paginator.num_pages,
+                "rows": data,
             }
         )
 
 
-def dict_to_querydict(dict_):
+def dict_to_querydict(data):
     """
     Converts a dict value into the Django's QueryDict object.
     """
-    query_dict = QueryDict('', mutable=True)
-    for name, value in dict_.items():
-        if isinstance(name, list):
+    query_dict = QueryDict(mutable=True)
+    for name, value in data.items():
+        if isinstance(value, list):
             query_dict.setlist(name, value)
         else:
-            query_dict.appendlist(name, value)
+            query_dict[name] = value
     query_dict._mutable = False
     return query_dict
 

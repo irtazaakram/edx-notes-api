@@ -4,6 +4,7 @@
 Django
 requests
 djangorestframework
+djangorestframework-simplejwt
 drf-spectacular
 elasticsearch
 elasticsearch-dsl

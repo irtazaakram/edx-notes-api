@@ -5,9 +5,7 @@ from rest_framework import serializers
 
 from ..documents import NoteDocument
 
-__all__ = (
-    'NoteDocumentSerializer',
-)
+__all__ = ("NoteDocumentSerializer",)
 
 
 class NoteDocumentSerializer(DocumentSerializer):
@@ -23,37 +21,37 @@ class NoteDocumentSerializer(DocumentSerializer):
         """
         Meta options.
         """
-
         document = NoteDocument
         fields = (
-            'id',
-            'user',
-            'course_id',
-            'usage_id',
-            'quote',
-            'created',
-            'updated',
+            "id",
+            "user",
+            "course_id",
+            "usage_id",
+            "quote",
+            "text",
+            "ranges",
+            "tags",
+            "created",
+            "updated",
         )
 
     def get_text(self, note):
         """
         Return note text.
         """
-        if hasattr(note.meta, 'highlight') and hasattr(note.meta.highlight, 'text'):
-            return note.meta.highlight.text[0]
-        return note.text
+        return getattr(note.meta.highlight, "text", [note.text])[0]
 
     def get_ranges(self, note):
         """
         Return note ranges.
         """
-        return json.loads(note.ranges)
+        try:
+            return json.loads(note.ranges)
+        except (TypeError, json.JSONDecodeError):
+            return []
 
     def get_tags(self, note):
         """
         Return note tags.
         """
-        if hasattr(note.meta, 'highlight') and hasattr(note.meta.highlight, 'tags'):
-            return [i for i in note.meta.highlight.tags]
-
-        return [i for i in note.tags] if note.tags else []
+        return getattr(note.meta.highlight, "tags", note.tags) or []

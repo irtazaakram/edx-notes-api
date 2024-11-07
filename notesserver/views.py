@@ -3,8 +3,7 @@ import traceback
 
 from django.conf import settings
 from django.db import connection
-from django.http import JsonResponse
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from elasticsearch.exceptions import TransportError
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -13,44 +12,40 @@ from rest_framework.response import Response
 
 try:
     import newrelic.agent
-except ImportError:  # pragma: no cover
-    newrelic = None  # pylint: disable=invalid-name
+except ImportError:
+    newrelic = None
+
 if not settings.ES_DISABLED:
     from elasticsearch_dsl.connections import connections
-
 
     def get_es():
         return connections.get_connection()
 
-
 @api_view(['GET'])
 @permission_classes([AllowAny])
-def root(request):  # pylint: disable=unused-argument
+def root(request):
     """
     Root view.
     """
-    return Response({
-        "name": "edX Notes API",
-        "version": "1"
-    })
+    return Response({"name": "edX Notes API", "version": "1"})
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
-def robots(request):  # pylint: disable=unused-argument
+def robots(request):
     """
     robots.txt
     """
     return HttpResponse("User-agent: * Disallow: /", content_type="text/plain")
 
-
 @api_view(['GET'])
 @permission_classes([AllowAny])
-def heartbeat(request):  # pylint: disable=unused-argument
+def heartbeat(request):
     """
     ElasticSearch and database are reachable and ready to handle requests.
     """
     if newrelic:  # pragma: no cover
         newrelic.agent.ignore_transaction()
+
     try:
         db_status()
     except Exception:
@@ -61,14 +56,14 @@ def heartbeat(request):  # pylint: disable=unused-argument
 
     return JsonResponse({"OK": True}, status=status.HTTP_200_OK)
 
-
 @api_view(['GET'])
 @permission_classes([AllowAny])
-def selftest(request):  # pylint: disable=unused-argument
+def selftest(request):
     """
     Manual test endpoint.
     """
-    start = datetime.datetime.now()
+    start_time = datetime.datetime.now()
+    es_status = None
 
     if not settings.ES_DISABLED:
         try:
@@ -81,26 +76,22 @@ def selftest(request):  # pylint: disable=unused-argument
 
     try:
         db_status()
-        database = "OK"
+        db_status_msg = "OK"
     except Exception:
         return Response(
             {"db_error": traceback.format_exc()},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
-    end = datetime.datetime.now()
-    delta = end - start
+    time_elapsed_ms = int((datetime.datetime.now() - start_time).total_seconds() * 1000)
 
     response = {
-        "db": database,
-        "time_elapsed": int(delta.total_seconds() * 1000)  # In milliseconds.
+        "db": db_status_msg,
+        "time_elapsed": time_elapsed_ms,
+        **({"es": es_status} if es_status else {})
     }
 
-    if not settings.ES_DISABLED:
-        response['es'] = es_status
-
     return Response(response)
-
 
 def db_status():
     """
@@ -108,4 +99,4 @@ def db_status():
     """
     with connection.cursor() as cursor:
         cursor.execute("SELECT 1")
-        cursor.fetchone()
+        return cursor.fetchone()
