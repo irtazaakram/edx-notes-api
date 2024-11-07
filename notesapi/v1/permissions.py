@@ -1,9 +1,10 @@
 import logging
 
+import jwt
 from django.conf import settings
+from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.permissions import BasePermission
 from rest_framework_simplejwt.tokens import AccessToken
-from rest_framework.exceptions import AuthenticationFailed
 
 logger = logging.getLogger(__name__)
 

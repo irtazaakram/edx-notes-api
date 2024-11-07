@@ -18,7 +18,7 @@ except ImportError:
 if not settings.ES_DISABLED:
     from elasticsearch_dsl.connections import connections
 
-    def get_es_connection():
+    def get_es():
         return connections.get_connection()
 
 @api_view(['GET'])
@@ -51,7 +51,7 @@ def heartbeat(request):
     except Exception:
         return JsonResponse({"OK": False, "check": "db"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    if not settings.ES_DISABLED and not get_es_connection().ping():
+    if not settings.ES_DISABLED and not get_es().ping():
         return JsonResponse({"OK": False, "check": "es"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     return JsonResponse({"OK": True}, status=status.HTTP_200_OK)
@@ -67,7 +67,7 @@ def selftest(request):
 
     if not settings.ES_DISABLED:
         try:
-            es_status = get_es_connection().info()
+            es_status = get_es().info()
         except TransportError:
             return Response(
                 {"es_error": traceback.format_exc()},
