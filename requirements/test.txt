@@ -71,6 +71,7 @@ distlib==0.3.9
     #   django-nine
     #   django-waffle
     #   djangorestframework
+    #   djangorestframework-simplejwt
     #   drf-jwt
     #   drf-spectacular
     #   edx-django-release-util
@@ -101,9 +102,12 @@ djangorestframework==3.15.2
     # via
     #   -r requirements/base.txt
     #   django-elasticsearch-dsl-drf
+    #   djangorestframework-simplejwt
     #   drf-jwt
     #   drf-spectacular
     #   edx-drf-extensions
+djangorestframework-simplejwt==5.3.1
+    # via -r requirements/base.txt
 dnspython==2.7.0
     # via
     #   -r requirements/base.txt
@@ -226,6 +230,7 @@ pygments==2.18.0
 pyjwt[crypto]==2.9.0
     # via
     #   -r requirements/base.txt
+    #   djangorestframework-simplejwt
     #   drf-jwt
     #   edx-drf-extensions
 pylint==3.3.1
