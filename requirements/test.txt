@@ -23,7 +23,7 @@ cachetools==5.5.0
 certifi==2024.8.30
     # via
     #   -r requirements/base.txt
-    #   elasticsearch
+    #   elastic-transport
     #   requests
 cffi==1.17.1
     # via
@@ -64,11 +64,10 @@ dill==0.3.9
 distlib==0.3.9
     # via virtualenv
     # via
-    #   -c https://raw.githubusercontent.com/openedx/edx-lint/master/edx_lint/files/common_constraints.txt
+    #   -c requirements/constraints.txt
     #   -r requirements/base.txt
     #   django-cors-headers
     #   django-crum
-    #   django-nine
     #   django-waffle
     #   djangorestframework
     #   drf-jwt
@@ -82,16 +81,8 @@ django-crum==0.7.9
     # via
     #   -r requirements/base.txt
     #   edx-django-utils
-django-elasticsearch-dsl==7.4
-    # via
-    #   -r requirements/base.txt
-    #   django-elasticsearch-dsl-drf
-django-elasticsearch-dsl-drf==0.22.5
+django-elasticsearch-dsl==8.0
     # via -r requirements/base.txt
-django-nine==0.2.7
-    # via
-    #   -r requirements/base.txt
-    #   django-elasticsearch-dsl-drf
 django-waffle==4.1.0
     # via
     #   -r requirements/base.txt
@@ -100,7 +91,6 @@ django-waffle==4.1.0
 djangorestframework==3.15.2
     # via
     #   -r requirements/base.txt
-    #   django-elasticsearch-dsl-drf
     #   drf-jwt
     #   drf-spectacular
     #   edx-drf-extensions
@@ -126,17 +116,18 @@ edx-opaque-keys==2.11.0
     # via
     #   -r requirements/base.txt
     #   edx-drf-extensions
-elasticsearch==7.13.4
+elastic-transport==8.15.1
     # via
-    #   -c https://raw.githubusercontent.com/openedx/edx-lint/master/edx_lint/files/common_constraints.txt
     #   -r requirements/base.txt
-    #   django-elasticsearch-dsl-drf
+    #   elasticsearch
+elasticsearch==8.15.1
+    # via
+    #   -r requirements/base.txt
     #   elasticsearch-dsl
-elasticsearch-dsl==7.4.1
+elasticsearch-dsl==8.15.4
     # via
     #   -r requirements/base.txt
     #   django-elasticsearch-dsl
-    #   django-elasticsearch-dsl-drf
 factory-boy==3.3.1
     # via -r requirements/test.in
 faker==30.8.2
@@ -186,7 +177,6 @@ newrelic==10.2.0
 packaging==24.2
     # via
     #   -r requirements/base.txt
-    #   django-nine
     #   gunicorn
     #   pyproject-api
     #   pytest
@@ -286,9 +276,7 @@ six==1.16.0
     # via
     #   -r requirements/base.txt
     #   django-elasticsearch-dsl
-    #   django-elasticsearch-dsl-drf
     #   edx-django-release-util
-    #   elasticsearch-dsl
     #   python-dateutil
 sqlparse==0.5.1
     # via
@@ -310,15 +298,16 @@ typing-extensions==4.12.2
     # via
     #   -r requirements/base.txt
     #   edx-opaque-keys
+    #   elasticsearch-dsl
     #   faker
 uritemplate==4.1.1
     # via
     #   -r requirements/base.txt
     #   drf-spectacular
-urllib3==1.26.20
+urllib3==2.2.3
     # via
     #   -r requirements/base.txt
-    #   elasticsearch
+    #   elastic-transport
     #   requests
 virtualenv==20.27.1
     # via tox

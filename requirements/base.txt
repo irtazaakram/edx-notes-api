@@ -14,7 +14,7 @@ attrs==24.2.0
     #   referencing
 certifi==2024.8.30
     # via
-    #   elasticsearch
+    #   elastic-transport
     #   requests
 cffi==1.17.1
     # via
@@ -28,11 +28,10 @@ cryptography==43.0.3
     # via pyjwt
 django==4.2.16
     # via
-    #   -c https://raw.githubusercontent.com/openedx/edx-lint/master/edx_lint/files/common_constraints.txt
+    #   -c requirements/constraints.txt
     #   -r requirements/base.in
     #   django-cors-headers
     #   django-crum
-    #   django-nine
     #   django-waffle
     #   djangorestframework
     #   drf-jwt
@@ -44,14 +43,8 @@ django-cors-headers==4.6.0
     # via -r requirements/base.in
 django-crum==0.7.9
     # via edx-django-utils
-django-elasticsearch-dsl==7.4
-    # via
-    #   -r requirements/base.in
-    #   django-elasticsearch-dsl-drf
-django-elasticsearch-dsl-drf==0.22.5
+django-elasticsearch-dsl==8.0
     # via -r requirements/base.in
-django-nine==0.2.7
-    # via django-elasticsearch-dsl-drf
 django-waffle==4.1.0
     # via
     #   edx-django-utils
@@ -59,7 +52,6 @@ django-waffle==4.1.0
 djangorestframework==3.15.2
     # via
     #   -r requirements/base.in
-    #   django-elasticsearch-dsl-drf
     #   drf-jwt
     #   drf-spectacular
     #   edx-drf-extensions
@@ -79,17 +71,16 @@ edx-drf-extensions==10.5.0
     # via -r requirements/base.in
 edx-opaque-keys==2.11.0
     # via edx-drf-extensions
-elasticsearch==7.13.4
+elastic-transport==8.15.1
+    # via elasticsearch
+elasticsearch==8.15.1
     # via
-    #   -c https://raw.githubusercontent.com/openedx/edx-lint/master/edx_lint/files/common_constraints.txt
     #   -r requirements/base.in
-    #   django-elasticsearch-dsl-drf
     #   elasticsearch-dsl
-elasticsearch-dsl==7.4.1
+elasticsearch-dsl==8.15.4
     # via
     #   -r requirements/base.in
     #   django-elasticsearch-dsl
-    #   django-elasticsearch-dsl-drf
 gunicorn==23.0.0
     # via -r requirements/base.in
 idna==3.10
@@ -107,9 +98,7 @@ newrelic==10.2.0
     #   -r requirements/base.in
     #   edx-django-utils
 packaging==24.2
-    # via
-    #   django-nine
-    #   gunicorn
+    # via gunicorn
 path==17.0.0
     # via path-py
 path-py==12.5.0
@@ -156,9 +145,7 @@ semantic-version==2.10.0
 six==1.16.0
     # via
     #   django-elasticsearch-dsl
-    #   django-elasticsearch-dsl-drf
     #   edx-django-release-util
-    #   elasticsearch-dsl
     #   python-dateutil
 sqlparse==0.5.1
     # via django
@@ -172,9 +159,9 @@ typing-extensions==4.12.2
     #   elasticsearch-dsl
 uritemplate==4.1.1
     # via drf-spectacular
-urllib3==1.26.20
+urllib3==2.2.3
     # via
-    #   elasticsearch
+    #   elastic-transport
     #   requests
 
 # The following packages are considered to be unsafe in a requirements file:

@@ -51,7 +51,7 @@ MIDDLEWARE = (
     'edx_rest_framework_extensions.auth.jwt.middleware.EnsureJWTAuthSettingsMiddleware',
 )
 
-ES_APPS = ('elasticsearch_dsl', 'django_elasticsearch_dsl', 'django_elasticsearch_dsl_drf',)
+ES_APPS = ('elasticsearch_dsl', 'django_elasticsearch_dsl',)
 
 INSTALLED_APPS = [
     'django.contrib.auth',

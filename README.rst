@@ -11,7 +11,7 @@ The edX Notes API is designed to be compatible with the `Annotator <http://annot
 Getting Started
 ***************
 
-1. Install `ElasticSearch 7.13.4 <https://www.elastic.co/downloads/past-releases/elasticsearch-7-13-4>`__.
+1. Install `ElasticSearch 8.15.3 <https://www.elastic.co/downloads/past-releases/elasticsearch-8-15-3>`__.
 
 2. Install the requirements:
 
@@ -19,13 +19,13 @@ Getting Started
 
       make develop
 
-3. Create index and put mapping:
+3. Create Elasticsearch Index and Mapping
 
    .. code-block:: bash
 
       make create-index
 
-4. Run the server:
+4. Run the Server
 
    .. code-block:: bash
 
@@ -47,16 +47,79 @@ Configuration
 Running Tests
 *************
 
-Run ``make validate`` install the requirements, run the tests, and run
-lint.
+The ``Makefile`` provides a convenient ``validate`` command to install test dependencies, run tests, and perform linting.
 
-How To Resync The Index
+.. code-block:: bash
+
+   make validate
+
+Running Django CI Tests Locally
+*******************************
+
+1. **Starting MySQL and Elasticsearch Services with Docker**
+
+   Run the following commands to start the MySQL and Elasticsearch containers:
+
+   .. code-block:: bash
+
+      docker run -d --name mysql -p 3306:3306 \
+        -e MYSQL_ROOT_PASSWORD= \
+        -e MYSQL_ALLOW_EMPTY_PASSWORD=yes \
+        -e MYSQL_DATABASE=edx_notes_api \
+        --health-cmd="mysqladmin ping -h localhost" \
+        --health-interval=10s \
+        --health-timeout=5s \
+        --health-retries=3 \
+        mysql:8.0
+
+   .. code-block:: bash
+
+      docker run -d --name elasticsearch -p 9200:9200 \
+         -e "discovery.type=single-node" \
+         -e "bootstrap.memory_lock=true" \
+         -e "ES_JAVA_OPTS=-Xms512m -Xmx512m" \
+         -e "xpack.security.enabled=false" \
+         --health-cmd="curl -f http://localhost:9200 || exit 1" \
+         --health-interval=10s \
+         --health-timeout=5s \
+         --health-retries=3 \
+         elasticsearch:8.15.3
+
+
+2. **Running Tests with Tox**
+
+   Use `tox` to run the tests, specifying each environment to test:
+
+   .. code-block:: bash
+
+      tox -e django42
+      tox -e quality
+      tox -e pii_check
+      tox -e check_keywords
+
+   Activate the relevant Python version environment before running each command, if needed.
+
+3. **Stopping Docker Services (Optional)**
+
+   After testing, you can stop and remove the Docker containers to free up resources:
+
+   .. code-block:: bash
+
+      docker stop mysql elasticsearch
+      docker rm mysql elasticsearch
+
+How to Resync the Index
 ***********************
 
-edX Notes Store uses `Django elasticsearch DSL <https://django-elasticsearch-dsl.readthedocs.io/>`_ which comes with several management commands.
+If needed, you can resync the Elasticsearch index using Django's Elasticsearch DSL management commands.
 
-Please read more about ``search_index`` management commands
-`here <https://django-elasticsearch-dsl.readthedocs.io/en/latest/management.html>`_.
+Example:
+
+.. code-block:: bash
+
+   python manage.py search_index --rebuild -f
+
+For more details, refer to the `Django Elasticsearch DSL documentation <https://django-elasticsearch-dsl.readthedocs.io/en/latest/management.html>`__.
 
 License
 *******
@@ -88,4 +151,3 @@ __ https://groups.google.com/g/edx-code
 
 .. |build-status| image:: https://github.com/openedx/edx-notes-api/actions/workflows/ci.yml/badge.svg
    :target: https://github.com/openedx/edx-notes-api/actions/workflows/ci.yml
-

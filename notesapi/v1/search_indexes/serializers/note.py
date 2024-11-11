@@ -1,59 +1,46 @@
 import json
 
-from django_elasticsearch_dsl_drf.serializers import DocumentSerializer
 from rest_framework import serializers
-
-from ..documents import NoteDocument
 
 __all__ = (
     'NoteDocumentSerializer',
 )
 
 
-class NoteDocumentSerializer(DocumentSerializer):
+class NoteDocumentSerializer(serializers.Serializer):  # pylint: disable=abstract-method
     """
     Serializer for the Note document.
     """
 
+    id = serializers.CharField()
+    user = serializers.CharField()
+    course_id = serializers.CharField()
+    usage_id = serializers.CharField()
+    quote = serializers.CharField()
+    created = serializers.DateTimeField()
+    updated = serializers.DateTimeField()
     text = serializers.SerializerMethodField()
     ranges = serializers.SerializerMethodField()
     tags = serializers.SerializerMethodField()
 
-    class Meta:
-        """
-        Meta options.
-        """
-
-        document = NoteDocument
-        fields = (
-            'id',
-            'user',
-            'course_id',
-            'usage_id',
-            'quote',
-            'created',
-            'updated',
-        )
-
     def get_text(self, note):
         """
-        Return note text.
+        Return note text with highlighting if present.
         """
-        if hasattr(note.meta, 'highlight') and hasattr(note.meta.highlight, 'text'):
-            return note.meta.highlight.text[0]
+        if hasattr(note.meta, 'highlight') and 'text' in note.meta.highlight:
+            return note.meta.highlight['text'][0]
         return note.text
 
     def get_ranges(self, note):
         """
-        Return note ranges.
+        Return note ranges as JSON.
         """
         return json.loads(note.ranges)
 
     def get_tags(self, note):
         """
-        Return note tags.
+        Return note tags with highlighting if present.
         """
-        if hasattr(note.meta, 'highlight') and hasattr(note.meta.highlight, 'tags'):
-            return list(note.meta.highlight.tags)
-
+        if hasattr(note.meta, 'highlight') and 'tags' in note.meta.highlight:
+            return list(note.meta.highlight['tags'])
         return list(note.tags) if note.tags else []

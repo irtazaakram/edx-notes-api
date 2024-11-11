@@ -1,12 +1,16 @@
 #  pylint:disable=possibly-used-before-assignment
 import json
 import logging
+
 import newrelic.agent
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.urls import reverse
 from django.utils.translation import gettext as _
+from elasticsearch_dsl import Q as ES_Q
+from elasticsearch_dsl import Search
+from elasticsearch_dsl.connections import connections
 from rest_framework import status
 from rest_framework.generics import GenericAPIView, ListAPIView
 from rest_framework.response import Response
@@ -17,17 +21,12 @@ from notesapi.v1.search_indexes.documents import NoteDocument
 from notesapi.v1.serializers import NoteSerializer
 
 if not settings.ES_DISABLED:
-    from elasticsearch_dsl import Search
-    from elasticsearch_dsl.connections import connections
-    from django_elasticsearch_dsl_drf.filter_backends import DefaultOrderingFilterBackend, HighlightBackend
-    from django_elasticsearch_dsl_drf.constants import (
-        LOOKUP_FILTER_TERM,
-        LOOKUP_QUERY_IN,
-        SEPARATOR_LOOKUP_COMPLEX_VALUE,
-    )
-    from notesapi.v1.search_indexes.paginators import NotesPagination as ESNotesPagination
-    from notesapi.v1.search_indexes.backends import CompoundSearchFilterBackend, FilteringFilterBackend
-    from notesapi.v1.search_indexes.serializers import NoteDocumentSerializer as NotesElasticSearchSerializer
+    from notesapi.v1.search_indexes.backends import (
+        CompoundSearchFilterBackend, FilteringFilterBackend)
+    from notesapi.v1.search_indexes.paginators import \
+        NotesPagination as ESNotesPagination
+    from notesapi.v1.search_indexes.serializers import \
+        NoteDocumentSerializer as NotesElasticSearchSerializer
 
 log = logging.getLogger(__name__)
 
@@ -132,29 +131,22 @@ class AnnotationSearchView(ListAPIView):
     filter_fields = {
         'course_id': 'course_id',
         'user': 'user',
-        'usage_id': {
-            'field': 'usage_id',
-            'lookups': [
-                LOOKUP_QUERY_IN,
-                LOOKUP_FILTER_TERM,
-            ],
-        },
-
+        'usage_id': 'usage_id',
     }
     highlight_fields = {
         'text': {
             'enabled': True,
             'options': {
-                'pre_tags': ['{elasticsearch_highlight_start}'],
-                'post_tags': ['{elasticsearch_highlight_end}'],
+                'pre_tags': ['<em>'],
+                'post_tags': ['</em>'],
                 'number_of_fragments': 0,
             },
         },
         'tags': {
             'enabled': True,
             'options': {
-                'pre_tags': ['{elasticsearch_highlight_start}'],
-                'post_tags': ['{elasticsearch_highlight_end}'],
+                'pre_tags': ['<em>'],
+                'post_tags': ['</em>'],
                 'number_of_fragments': 0,
             },
         },
@@ -172,11 +164,10 @@ class AnnotationSearchView(ListAPIView):
         Should be called in the class `__init__` method.
         """
         if not settings.ES_DISABLED:
-            self.client = connections.get_connection(self.document._get_using())  # pylint: disable=protected-access
+            self.client = connections.get_connection()
             self.index = self.document._index._name  # pylint: disable=protected-access
-            self.mapping = self.document._doc_type.mapping.properties.name  # pylint: disable=protected-access
-            # pylint: disable=protected-access
-            self.search = Search(using=self.client, index=self.index, doc_type=self.document._doc_type.name)
+
+            self.search = Search(using=self.client, index=self.index)
 
     @property
     def is_es_disabled(self):
@@ -196,8 +187,12 @@ class AnnotationSearchView(ListAPIView):
                     Q(text__icontains=self.params['text']) | Q(tags__icontains=self.params['text'])
                 )
         else:
-            queryset = self.search.query()
-            queryset.model = self.document.Django.model
+            # Use Elasticsearch DSL's OR logic to match text in either `text` or `tags`
+            query = ES_Q("bool", should=[
+                ES_Q("match", text=self.params.get("text", "")),
+                ES_Q("match", tags=self.params.get("text", ""))
+            ])
+            queryset = self.search.query(query).sort(*self.ordering)
 
         return queryset
 
@@ -217,15 +212,8 @@ class AnnotationSearchView(ListAPIView):
         The paginator instance associated with the view and used data source, or `None`.
         """
         if not hasattr(self, '_paginator'):
-            if self.pagination_class is None:
-                self._paginator = None  # pylint: disable=attribute-defined-outside-init
-            else:
-                self._paginator = (  # pylint: disable=attribute-defined-outside-init
-                    self.pagination_class()
-                    if self.is_es_disabled
-                    else ESNotesPagination()
-                )
-
+            # pylint: disable=attribute-defined-outside-init
+            self._paginator = self.pagination_class() if self.is_es_disabled else ESNotesPagination()
         return self._paginator
 
     def filter_queryset(self, queryset):
@@ -237,14 +225,7 @@ class AnnotationSearchView(ListAPIView):
         """
         filter_backends = []
         if not self.is_es_disabled:
-            filter_backends = [
-                FilteringFilterBackend,
-                CompoundSearchFilterBackend,
-                DefaultOrderingFilterBackend,
-            ]
-            if self.params.get('highlight'):
-                filter_backends.append(HighlightBackend)
-
+            filter_backends = [FilteringFilterBackend, CompoundSearchFilterBackend]
         for backend in filter_backends:
             queryset = backend().filter_queryset(self.request, queryset, view=self)
         return queryset
@@ -271,19 +252,11 @@ class AnnotationSearchView(ListAPIView):
         usage_ids = self.request.query_params.getlist('usage_id')
         if usage_ids:
             self.search_with_usage_id = True
-            if not self.is_es_disabled:
-                usage_ids = SEPARATOR_LOOKUP_COMPLEX_VALUE.join(usage_ids)
-
             self.query_params['usage_id__in'] = usage_ids
-
         if 'course_id' in self.params:
             self.query_params['course_id'] = self.params['course_id']
-
         if 'user' in self.params:
-            if self.is_es_disabled:
-                self.query_params['user_id'] = self.params['user']
-            else:
-                self.query_params['user'] = self.params['user']
+            self.query_params['user'] = self.params['user']
 
     def get(self, *args, **kwargs):
         """

@@ -8,7 +8,6 @@ drf-spectacular
 elasticsearch
 elasticsearch-dsl
 django-elasticsearch-dsl
-django-elasticsearch-dsl-drf
 django-cors-headers
 mysqlclient
 PyJWT

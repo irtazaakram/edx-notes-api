@@ -106,7 +106,7 @@ class OperationalEndpointsTest(APITestCase):
         """
         Elasticsearch is not reachable on selftest.
         """
-        mocked_get_es.return_value.info.side_effect = TransportError()
+        mocked_get_es.return_value.info.side_effect = TransportError(500, "Elasticsearch unreachable")
         response = self.client.get(reverse('selftest'))
         self.assertEqual(response.status_code, 500)
         self.assertIn('es_error', response.data)
